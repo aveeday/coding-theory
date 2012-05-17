@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Помехоустойчивое кодирование</title>
+	<meta name="author" content="Konstantyn Nesterenko" />
+	<script type="text/javascript" src="./lib/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="./js/block.js" charset="utf-8"></script>
+	<style>
+	html, body {
+		padding:0;
+		margin:0;
+	}
+	body {
+		background-color:#fff;
+		font-family:arial;
+	}
+	table {
+		margin:0 auto;
+		border-collapse: collapse;
+	}
+	td, th {
+		border:1px solid #555555;
+	}
+	.sep {
+		border-collapse: collapse;
+		margin-bottom:5px;
+		margin-top:10px;
+	}
+	select {
+		font-size:12pt;
+	}
+	input {
+		font-size:16pt;
+	}
+	#codewords_buttons input {
+		font-size:10pt;
+	}
+	#hamming_distance_buttons input {
+		font-size:10pt;
+	}
+	input.button {
+		font-size:12pt;
+	}
+	div.button {
+		padding:5px;
+		margin:5px;
+	}
+	div.button span {
+		box-shadow: 0 0 3px #aaa;
+		padding:5px;
+		border-radius:3px;
+		cursor:pointer;
+	}
+	div.button span:hover {
+		box-shadow: 0 0 3px #000;
+	}
+	div.button span:active {
+		box-shadow: inset 0 0 2px #000;
+	}
+	#main, #specifications, #check-matr, #check-matr {
+		text-align:center;
+	}
+	#select_top {
+		/* height:30px; */
+		width:100%;
+		/* background-color:#fff; */
+		text-align:left;
+		border-bottom: 1px solid #cccccc;
+		background-color:#eee;
+		position:fixed;
+		left:0;
+		top:0;
+	}
+	#codeselect {
+
+	}
+	#container_hamming_distance {
+		margin-bottom:10px;
+	}
+	#codetype {
+		padding:30px;
+		background-color:#FFFFFF;
+		text-align:center;
+		margin-top:28px;
+		display:none;
+	}
+	#specifications table {
+		border-spacing: 0px;
+	}
+	#specifications, #inf, #input, #gen-matr, #encoded, #link, #received, #check-matr, #syndrome, #syndromelist, #codewords, #hamming_distance {
+		margin-bottom:20px;
+	}
+	#specifications td {
+		padding:3px 20px;
+	}
+	#specifications th {
+		background-color:#eeeeee;
+		padding-left:20px;
+		padding-right:20px;
+	}
+	thead {
+		background-color:#CCCCCC;
+	}
+	.table1 {
+		border-spacing: 0px;
+		border:1px solid #aaaaaa;
+		font-size:12pt;
+	}
+	.table1 thead td {
+		padding:0 5px;
+	}
+	.table1 td {
+		border:1px solid #aaaaaa;
+	}
+	.table1 tbody td {
+		min-width:25px;
+	}
+	#codewords tbody tr:nth-child(odd) {
+		background:rgb(240,240,240);
+	}
+	#codewords tbody tr:hover {
+		background:#555;
+		color:#fff;
+	}
+	.ham_hover {
+		background:#ff0;
+	}
+	td.number {
+		background:#aaa;
+	}
+	table.matr {
+		border-right: 2px solid black;
+		border-left: 2px solid black;
+		border-radius: 10px;
+		border-collapse: separate;
+	}
+	table.matr caption {
+		font-size:12pt;
+	}
+	table.matr td {
+		width:25px;
+		height:25px;
+		border-radius:10px;
+		border:none;
+	}
+	.matr1 {
+		background-color:#ccff66;
+	}
+	.ch, .link {
+		font-size:18pt;
+		width:30px;
+		height:30px;
+		border:1px solid #555555;
+	}
+	td.ch_desc {
+		background:#eee;
+		border-color:#aaa;
+		font-size:12pt;
+		color:#555;
+	}
+	#steps_coding, #steps_decoding {
+		font-size:12pt;
+		/* background-color:#eeeeee; */
+		border:2px solid #eee;
+		text-align:left;
+		padding:10px;
+		border-radius:5px 5px 5px 5px;
+		font-family:arial;
+		display:none;
+	}
+	#gen-matr, #check-matr, #syndromelist {
+		display:none;
+	}
+	#link a{
+		background-color:#99ff99;
+		color:#aaaaaa;
+		text-decoration:none;
+	}
+	#link a:hover { background-color:#ffff33; }
+	#inf  { display: inline; }
+	#inf tr:nth-child(1), .ch_inf, #decoded tr:nth-child(1) { background-color:#99ffff; }
+	#syndrome tr:nth-child(1) { background-color:#ffcc66; }
+	#syndromelist table {
+		border:1px solid #aaaaaa;
+		border-spacing: 0px;
+	}
+	#syndromelist td{
+		border:1px solid #aaaaaa;
+		padding:3px 10px;
+	}
+	.ch_check { background-color:#cc99ff; }
+	.ch_err { background-color:#ff9999; }
+	.inf { background-color:#99ffff; }
+	footer {
+		margin-top:40px;
+		padding:20px;
+		background-color:rgb(250,250,250);
+		text-align:center;
+		color:#888;
+	}
+	</style>
+</head>
+<body>
+	<div id="select_top">
+		<select id="codeselect">
+			<option selected disabled>Код</option>
+			<option value="6:3:3">(6,3,3)</option>
+			<option value="7:4:3">(7,4,3)</option>
+			<option value="9:5:3">(9,5,3)</option>
+			<option value="10:6:3">(10,6,3)</option>
+			<option value="11:7:3">(11,7,3)</option>
+			<option value="12:8:3">(12,8,3)</option>
+			<option value="13:9:3">(13,9,3)</option>
+			<option value="14:10:3">(14,10,3)</option>
+			<option value="15:11:3">(15,11,3)</option>
+			<option value="23:12:7">(23,12,7)</option>
+		</select>
+	</div>
+	<div id="codetype">
+		<div id="specifications"></div>
+		<div class="button" id="show_codewords"><span>Таблица кодовых слов</span></div>
+		<div id="codewords_buttons">
+			От <input id="codewords_first" size="5">
+			До <input id="codewords_last" size="5">
+			<input id="codewords_build" type="button" value="Построить">
+			<div id="codewords"></div>
+		</div>
+		<div class="button" id="show_hamming_distance"><span>Таблица межкодовых расстояний</span></div>
+		<div id="hamming_distance_buttons">
+			От <input id="hamming_distance_first" size="5">
+			До <input id="hamming_distance_last" size="5">
+			<input id="hamming_distance_build" type="button" value="Построить">
+			<div id="hamming_distance"></div>
+		</div>
+		<div class="button" id="show_gen_matr"><span>Порождающая матрица</span></div>
+		<div id="gen-matr"></div>
+		<div class="button" id="show_check_matr"><span>Проверочная матрица</span></div>
+		<div id="check-matr"></div>
+		<div class="button" id="show_syndromelist"><span>Таблица синдромов</span></div>
+		<div id="syndromelist"></div>
+		<div id="input">
+			<div id="inf"></div>
+			<input id="input0" type="button" value=" 0 " />
+			<input id="input1" type="button" value=" 1 " />
+			<input id="reset" type="button" value="Reset" />
+		</div>
+		<div class="button" id="steps"><span>Кодирование по действиям</span></div>
+		<div id="steps_coding"></div>
+		<div id="encoded"></div>
+		<div id="link"></div>
+		<div id="received"></div>
+		<div class="button" id="steps2"><span>Декодирование по действиям</span></div>
+		<div id="steps_decoding"></div>
+		<div id="syndrome"></div>
+		<div id="decoded"></div>
+	</div>
+	<footer>
+	&#169 Константин Нестеренко
+	</footer>
+</body>
+</html>
