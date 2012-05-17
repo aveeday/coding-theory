@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Энтропийное кодирование</title>
+	<meta name="author" content="Konstantyn Nesterenko" />
+	<script type="text/javascript" src="./lib/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="./lib/jquery.treeview.js"></script>
+	<script type="text/javascript" src="./lib/jquery.cookie.js"></script>
+	<script type="text/javascript" src="./js/entropy.js" charset="utf-8"></script>
+	<script type="text/javascript" src="./lib/sort.js" charset="utf-8"></script>
+	<link rel="stylesheet" href="./css/jquery.treeview.css" />
+	<style>
+	table {
+		border-collapse: collapse;
+	}
+	table td{
+		border:1px solid #888;
+		padding:5px;
+		text-align:center;
+	}
+	/* наша HTML таблица */
+	table.sort{
+	border-spacing:0.1em;
+	margin-bottom:1em;
+	margin-top:1em
+	}
+
+	/* ячейки таблицы */
+	table.sort td{
+	border:1px solid #CCCCCC;
+	padding:0.1em 1em
+	}
+
+	/* заголовки таблицы */
+	table.sort thead td{
+	cursor:pointer;
+	cursor:hand;
+	font-weight:bold;
+	text-align:center;
+	vertical-align:middle;
+	background-color:#cccccc;
+	}
+
+	/* заголовок отсортированного столбца */
+	table.sort thead td.curcol{
+	background-color:#999999;
+	color:#FFFFFF
+	}
+
+	#mainhide {
+		display:none;
+	}
+
+	/* Дерево */ 
+	div.tree {
+		margin:10px;
+	}
+	div.tree ul li ul{
+		/*background:rgba(0,0,0,0.04);*/
+		margin:2px;
+		margin-left:12px;
+		margin-top:-1px;
+		z-index:5;
+		text-align:center;
+		/*border:1px solid black;*/
+	}
+	div.tree ul {
+		display:table-cell;
+	}
+	div.tree span {	
+		margin-left: 5px;
+		margin-top: -3px;
+		border: 1px solid #000;
+		position:relative;
+		z-index:10;
+		border-radius:10px;
+		padding:0 5px;
+		background:rgba(0,0,0,0.04);
+		margin:0 auto;
+	}
+	div.tree li {
+		display:table-cell;
+		margin:20px auto;
+		min-width:60px;
+		text-align:center;
+		background-image:none;
+		padding: 0px 0px 1px 0px;
+	}
+	.treeview .hitarea {
+		display:none;
+	}
+	div.tree li.expandable span {
+		background:#000;
+		color:#fff;
+	}
+	div.tree li.expandable span ul {
+		background-image:url();
+	}
+	.treeview ul {
+		/*background:rgba(0,0,0,0.04);*/
+		margin:1px;
+		border-radius:5px;
+	}
+	.treeview li {
+		padding:5px 2px;
+	}
+	div.tree span.backlight {
+		background:#ff9933;
+	}
+	#tree li, #tree_shannone li {
+		background:none;
+	}
+	li.collapsable li div.overaph_left, li.collapsable li div.overaph_right {
+		height:15px;
+		width:50%;
+		border-top:1px solid black;
+	}
+	li li div.overaph_left {
+		margin-left:50%;
+		border-left:1px solid black;
+		text-align:left;
+		border-radius:10px 0px;
+	}
+	li li div.overaph_right {
+		border-right:1px solid black;
+		text-align:right;
+		border-radius:0px 10px;
+	}
+	div.overaph_left span, div.overaph_right span{
+		display:none;
+		border:none;
+		background:none;
+		color:#aaa;
+	}
+	li li div.overaph_left span {
+		display:inline;
+		top:-20px;
+		left:-10px;
+	}
+	li li div.overaph_right span{
+		display:inline;
+		top:-20px;
+		right:-10px;
+	}
+	div.tree li.expandable div.overaph_right span, div.tree li.expandable div.overaph_left span {
+		background:none;
+		color:#aaa;
+	}
+	div.underap, div.underap2 {
+		height:20px;
+		width:50%;
+	}
+	div.underap {
+		border-right:1px solid black;
+		border-radius:10px 0;
+		float:left;
+	}
+	div.underap2 {
+		border-left:1px solid black;
+		border-radius:0 10px;
+		margin-left:50%;
+	}
+	/* дерево конец */
+
+	/* дерево Шеннона-Фано */
+	#tree_shannone {
+		padding-bottom:10px;
+	}
+	#tree_shannone div.under {
+		margin-top:5px;
+	}
+	#tree_shannone li.collapsable li div.overaph_left, #tree_shannone li.collapsable li div.overaph_right {
+		margin-bottom:5px;
+	}
+	#tree_shannone span {
+		padding:5px;
+		margin:0 10px;
+		position:relative;
+		z-index:10;
+	}
+	#tree_shannone span span.cont {
+		padding:0 5px;
+		margin:0;
+		position:relative;
+		z-index:5;
+	}
+	div.tree span.cont {
+		border:none;
+		border:1px solid #000;
+		background:none;
+		/*border-radius:0px;*/
+		cursor:default;
+	}
+	/* дерево Шеннона-Фано конец */
+
+	div.header {
+		background:#eee;
+		padding:5px;
+		border-bottom:1px solid #aaa;
+	}
+	div.content {
+		padding:5px;
+	}
+	div.tree_group, div.code_group {
+		border-top:1px solid #aaa;
+		border-bottom:1px solid #aaa;
+		margin-bottom:10px;
+	}
+	div.buttons {
+		padding:5px;
+	}
+	div.stat {
+		margin-bottom:20px;
+	}
+	div.tree span.mas1 {
+		background:#99ff99;
+	}
+	div.tree span.mas2 {
+		background:#99ccff;
+	}
+	 footer {
+		margin-top:40px;
+		padding:20px;
+		background-color:rgb(250,250,250);
+		text-align:center;
+		color:#888;
+	}
+	</style>
+</head>
+<body>
+
+<div>Введите текст:</div>
+<textarea id="text" rows="10" cols="50"></textarea>
+<div id="mainhide">
+	<div id="statistics"></div>
+	<div id="table_of_frequencies"></div>
+	<div class="tree_group">
+		<div class="header">Алгоритм Хаффмана</div>
+		<div class="buttons" id="buttons_before_tree">
+			<input class="tree_build_type" type="radio" name="tree_build_type" value="quick">Сразу результат</input><br />
+			<input class="tree_build_type" type="radio" name="tree_build_type" value="steps" checked="checked">Пошагово</input><br />
+			<div id="next_step_group">
+				<input id="auto_haf" type="button" value="Авто">
+				<input id="tree_reset" type="button" value="Сброс">
+				<input id="next_step" type="button" value="Дальше">
+			</div>
+		</div>
+		<div class="tree" id="tree"></div>
+	</div>
+	<div class="tree_group">
+		<div class="header">Алгоритм Шеннона-Фано</div>
+		<div class="buttons" id="buttons_before_tree_shannone">
+			<input class="tree_build_type_shannone" type="radio" name="tree_build_type_shannone" value="quick">Сразу результат</input><br />
+			<input class="tree_build_type_shannone" type="radio" name="tree_build_type_shannone" value="steps" checked="checked">Пошагово</input><br />
+			<div id="next_step_group_shannone">
+				<input id="auto_sha" type="button" value="Авто">
+				<input id="tree_reset_shannone" type="button" value="Сброс">
+				<input id="next_step_shannone" type="button" value="Дальше">
+			</div>
+		</div>
+		<div class="tree" id="tree_shannone"></div>
+	</div>
+	<!-- <div id="buttons_before_table_codewords">
+		<input class="tree_inverse" type="radio" name="tree_inverse" value="no" checked="checked">Прямой</input><br />
+		<input class="tree_inverse" type="radio" name="tree_inverse" value="yes">Инверсный</input><br />
+	</div> -->
+	<div id="table_codewords_all"></div>
+	<div class="code_group" id="code_container">
+		<div class="header" id="code_head">Кодированное сообщение по алгоритму Хаффмана</div>
+		<div class="content" id="code"></div>
+	</div>
+	<div class="stat" id="statistics2"></div>
+	<div class="code_group">
+		<div class="header">Кодированное сообщение по алгоритму Шеннона-Фано</div>
+		<div class="content" id="code_shannone"></div>
+	</div>
+	<div class="stat" id="statistics2_shannone"></div>
+</div>
+<footer>
+	&#169 Константин Нестеренко
+</footer>
+</body>
+</html>
